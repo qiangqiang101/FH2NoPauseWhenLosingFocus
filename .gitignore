@@ -1,0 +1,24 @@
+# Build output
+build/
+out/
+bin/
+release/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+
+# Visual Studio / editors
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.vcxproj.user
+
+# Native build leftovers
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.log

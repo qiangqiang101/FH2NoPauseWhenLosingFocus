@@ -1,0 +1,64 @@
+name: Release build
+
+# Builds when a release is published on GitHub. It can also be started by hand from the Actions tab
+# (Run workflow): that run keeps the zip as a workflow artifact instead of attaching it to a release.
+# Nothing builds on ordinary pushes or pull requests.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Version label for the zip name (manual runs only)"
+        required: false
+        default: "manual-test"
+
+permissions:
+  contents: write   # to attach the zip to a release
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      # the release's tag, or the label typed into a manual run
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag || 'manual-test' }}
+    steps:
+      - name: Check out (with the platform submodule)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure
+        run: cmake -B build -A x64
+
+      - name: Build (Release)
+        run: cmake --build build --config Release --target FH2NoPause
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $safe  = $env:RELEASE_TAG -replace '[^A-Za-z0-9._-]', '-'
+          $name  = "FH2NoPause-$safe"
+          $stage = "release/$name"
+          New-Item -ItemType Directory -Force -Path "$stage/azimuth-windows/fh2-mods" | Out-Null
+          Copy-Item build/Release/FH2NoPause.dll "$stage/azimuth-windows/fh2-mods/"
+          Copy-Item README.md $stage
+          Compress-Archive -Path "$stage/*" -DestinationPath "release/$name.zip" -Force
+
+      - name: Attach the zip to the release
+        if: github.event_name == 'release'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $safe = $env:RELEASE_TAG -replace '[^A-Za-z0-9._-]', '-'
+          gh release upload "$env:RELEASE_TAG" "release/FH2NoPause-$safe.zip" --clobber
+
+      - name: Keep the zip as a workflow artifact (manual runs)
+        if: github.event_name != 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: FH2NoPause-manual-build-${{ github.run_number }}
+          path: release/FH2NoPause-*.zip
+          if-no-files-found: error
+          retention-days: 14
