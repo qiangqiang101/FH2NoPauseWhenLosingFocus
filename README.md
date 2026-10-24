@@ -2,8 +2,6 @@
 
 Keeps **Forza Horizon 2** (Xbox One build on PC via the Azimuth launcher) running when its window loses focus, so you can alt-tab, click another monitor or use a second window without the game pausing. Built on the **FH2 Mod Platform**.
 
-Controller input keeps working while you are in another window.
-
 ## How it works
 
 The game could be checking focus in more than one way, so the mod covers both:
