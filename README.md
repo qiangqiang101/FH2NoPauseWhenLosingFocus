@@ -9,6 +9,8 @@ The game could be checking focus in more than one way, so the mod covers both:
 - It subclasses the game window and swallows the "you lost focus" messages (`WM_ACTIVATEAPP`, `WM_ACTIVATE`, `WM_KILLFOCUS`).
 - It hooks `GetForegroundWindow`, `GetActiveWindow` and `GetFocus` so they answer with the game window while the setting is on.
 
+Azimuth reads the controller through `Windows.Gaming.Input`, which stops delivering input to a window that isn't in the foreground. So the mod also hooks `IGamepad::GetCurrentReading` and, while the game is unfocused, fills the reading from XInput (which isn't gated). It installs once a controller is connected.
+
 A background thread re-checks every 1.5 seconds for the game window (the largest visible top-level window of the process), so it keeps working through loading screens and mode switches.
 
 ## Settings
