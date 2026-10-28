@@ -30,7 +30,7 @@ Set `KeepRunning=0` to get the normal pause-on-focus-loss behaviour back.
 
 ## Installation
 
-Requires the [FH2 Mod Platform](https://github.com/Trinculo54/fh2-mod-platform) (`d3dcompiler_47.dll` in your Azimuth folder), which most FH2 mods already install.
+Requires the [FH2 Mod Platform](https://github.com/Trinculo54/fh2-mod-platform) (`DWrite.dll` in your Azimuth folder), which most FH2 mods already install.
 
 1. Download `FH2NoPause-<version>.zip` from the **Releases** page and unzip it.
 2. Close the game. Copy the zip's **`azimuth-windows\`** folder into your Azimuth folder (the one with `azimuth.exe`) and say yes to merging.

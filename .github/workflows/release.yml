@@ -34,6 +34,20 @@ jobs:
       - name: Build (Release)
         run: cmake --build build --config Release --target FH2NoPause
 
+      # The platform needs llvm-mingw (its __try/__except doesn't build with MSVC), so it is built on its own.
+      # Only DWrite.dll is shipped: Azimuth 1.0.3 loads that and not d3dcompiler_47.dll.
+      - name: Build the platform's DWrite.dll (llvm-mingw)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo mstorsjo/llvm-mingw --pattern 'llvm-mingw-*-ucrt-x86_64.zip' --dir "$env:RUNNER_TEMP"
+          Expand-Archive "$env:RUNNER_TEMP/llvm-mingw-*-ucrt-x86_64.zip" -DestinationPath "$env:RUNNER_TEMP/llvm-mingw"
+          $bin = (Get-ChildItem "$env:RUNNER_TEMP/llvm-mingw" -Directory | Select-Object -First 1).FullName + "/bin"
+          $env:PATH = "$bin;$env:PATH"
+          cmake -S platform -B build-platform -G Ninja -DCMAKE_TOOLCHAIN_FILE="$PWD/platform/cmake/mingw-w64-x86_64.cmake" -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-platform --target fh2mod_platform
+
       - name: Package
         shell: pwsh
         run: |
@@ -42,6 +56,8 @@ jobs:
           $stage = "release/$name"
           New-Item -ItemType Directory -Force -Path "$stage/azimuth-windows/fh2-mods" | Out-Null
           Copy-Item build/Release/FH2NoPause.dll "$stage/azimuth-windows/fh2-mods/"
+          Copy-Item build-platform/DWrite.dll "$stage/azimuth-windows/"
+          Copy-Item platform/third_party/minhook/LICENSE.txt "$stage/LICENSE-MinHook.txt"
           Copy-Item README.md $stage
           Compress-Archive -Path "$stage/*" -DestinationPath "release/$name.zip" -Force
 
